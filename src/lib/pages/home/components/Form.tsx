@@ -18,6 +18,10 @@ import { Select, chakraComponents } from 'chakra-react-select';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { BiCheck, BiPlus } from 'react-icons/bi';
 
+type Entries<T> = {
+  [K in keyof T]: [K, T[K]];
+}[keyof T][];
+
 type Form = {
   firstName: string;
   lastName: string;
@@ -41,9 +45,19 @@ const customComponents = {
   ),
 };
 
-type Entries<T> = {
-  [K in keyof T]: [K, T[K]];
-}[keyof T][];
+const getTextContent = (
+  value: Form['gender'] | Form['techStack'] | Form['firstName']
+) => {
+  let textContent = '';
+  if (typeof value === 'string') {
+    textContent = value;
+  } else if (Array.isArray(value)) {
+    textContent = value.map((i) => i.value).join(', ');
+  } else if (value?.value) {
+    textContent = value.value;
+  }
+  return textContent;
+};
 
 export default function HookForm() {
   const {
@@ -58,7 +72,7 @@ export default function HookForm() {
 
   const { fields, prepend, remove } = useFieldArray({
     control,
-    name: 'techStack', // unique name for your Field Array
+    name: 'techStack',
   });
 
   function onSubmit(values: Form) {
@@ -68,20 +82,6 @@ export default function HookForm() {
       }, 3000);
     });
   }
-
-  const getTextContent = (
-    value: Form['gender'] | Form['techStack'] | Form['firstName']
-  ) => {
-    let textContent = '';
-    if (typeof value === 'string') {
-      textContent = value;
-    } else if (Array.isArray(value)) {
-      textContent = value.map((i) => i.value).join(', ');
-    } else if (value?.value) {
-      textContent = value.value;
-    }
-    return textContent;
-  };
 
   return (
     <>
@@ -94,7 +94,6 @@ export default function HookForm() {
               placeholder="first name"
               {...register('firstName', {
                 required: requiredMessage,
-                minLength: { value: 4, message: 'Minimum length should be 4' },
               })}
             />
             <FormErrorMessage>
@@ -209,37 +208,39 @@ export default function HookForm() {
                 <BiPlus size={18} />
               </IconButton>
             </Flex>
-            {fields.map((field, index) => (
-              <FormControl
-                isInvalid={Boolean(
-                  errors.techStack && errors.techStack[index]?.value
-                )}
-              >
-                <InputGroup id={field.id}>
-                  <Input
-                    id={`techStack-${index}`}
-                    placeholder="Tech Stack"
-                    {...register(`techStack.${index}.value`, {
-                      required: requiredMessage,
-                    })}
-                  />
-
-                  {index > 0 && (
-                    <InputRightElement>
-                      <CloseButton
-                        aria-label="remove"
-                        onClick={() => remove(index)}
-                      />
-                    </InputRightElement>
+            <Flex direction="column" width="100%" gap={1}>
+              {fields.map((field, index) => (
+                <FormControl
+                  isInvalid={Boolean(
+                    errors.techStack && errors.techStack[index]?.value
                   )}
-                </InputGroup>
-                <FormErrorMessage>
-                  {errors.techStack &&
-                    errors.techStack[index]?.value &&
-                    errors.techStack[index]?.value?.message}
-                </FormErrorMessage>
-              </FormControl>
-            ))}
+                >
+                  <InputGroup id={field.id}>
+                    <Input
+                      id={`techStack-${index}`}
+                      placeholder="Tech Stack"
+                      {...register(`techStack.${index}.value`, {
+                        required: requiredMessage,
+                      })}
+                    />
+
+                    {index > 0 && (
+                      <InputRightElement>
+                        <CloseButton
+                          aria-label="remove"
+                          onClick={() => remove(index)}
+                        />
+                      </InputRightElement>
+                    )}
+                  </InputGroup>
+                  <FormErrorMessage>
+                    {errors.techStack &&
+                      errors.techStack[index]?.value &&
+                      errors.techStack[index]?.value?.message}
+                  </FormErrorMessage>
+                </FormControl>
+              ))}
+            </Flex>
           </Flex>
 
           <Button
