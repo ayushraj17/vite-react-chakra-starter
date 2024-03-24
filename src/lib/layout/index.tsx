@@ -1,7 +1,6 @@
 import { Box, Flex } from '@chakra-ui/react';
 import type { ReactNode } from 'react';
 
-import Footer from './Footer';
 import Header from './Header';
 import Meta from './Meta';
 
@@ -18,7 +17,6 @@ const Layout = ({ children }: LayoutProps) => {
         <Box width="full" as="main" marginY={22}>
           {children}
         </Box>
-        <Footer />
       </Flex>
     </Box>
   );
